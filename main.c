@@ -1,104 +1,159 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-#define MAX_LENGTH 100
-
-// Function to check if a character is a delimiter
-bool isDelimiter(char ch) {
-    return (ch == ' ' || ch == '+' || ch == '-' || ch == '*' || ch == '/' ||
-            ch == ',' || ch == ';' || ch == '>' || ch == '<' || ch == '=' ||
-            ch == '(' || ch == ')' || ch == '[' || ch == ']' || ch == '{' || ch == '}');
+// Returns 'true' if the character is a DELIMITER.
+bool isDelimiter(char ch)
+{
+    if (ch == ' ' || ch == '+' || ch == '-' || ch == '*' ||
+        ch == '/' || ch == ',' || ch == ';' || ch == '>' ||
+        ch == '<' || ch == '=' || ch == '(' || ch == ')' ||
+        ch == '[' || ch == ']' || ch == '{' || ch == '}')
+        return (true);
+    return (false);
 }
 
-// Function to check if a character is an operator
-bool isOperator(char ch) {
-    return (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '>' || ch == '<' || ch == '=');
+// Returns 'true' if the character is an OPERATOR.
+bool isOperator(char ch)
+{
+    if (ch == '+' || ch == '-' || ch == '*' ||
+        ch == '/' || ch == '>' || ch == '<' ||
+        ch == '=')
+        return (true);
+    return (false);
 }
 
-// Function to check if a string is a valid identifier
-bool validIdentifier(char *str) {
-    if (!isalpha(str[0])) return false; // Identifier must start with a letter
-    for (int i = 1; str[i] != '\0'; i++) {
-        if (!isalnum(str[i]) && str[i] != '_') return false; // Only letters, digits, and underscores are allowed
+// Returns 'true' if the string is a VALID IDENTIFIER.
+bool validIdentifier(char* str)
+{
+    if (str[0] == '0' || str[0] == '1' || str[0] == '2' ||
+        str[0] == '3' || str[0] == '4' || str[0] == '5' ||
+        str[0] == '6' || str[0] == '7' || str[0] == '8' ||
+        str[0] == '9' || isDelimiter(str[0]) == true)
+        return (false);
+    return (true);
+}
+
+// Returns 'true' if the string is a KEYWORD.
+bool isKeyword(char* str)
+{
+    if (!strcmp(str, "if") || !strcmp(str, "else") ||
+        !strcmp(str, "while") || !strcmp(str, "do") ||
+        !strcmp(str, "break") ||
+         !strcmp(str, "continue") || !strcmp(str, "int")
+        || !strcmp(str, "double") || !strcmp(str, "float")
+        || !strcmp(str, "return") || !strcmp(str, "char")
+        || !strcmp(str, "case") || !strcmp(str, "char")
+        || !strcmp(str, "sizeof") || !strcmp(str, "long")
+        || !strcmp(str, "short") || !strcmp(str, "typedef")
+        || !strcmp(str, "switch") || !strcmp(str, "unsigned")
+        || !strcmp(str, "void") || !strcmp(str, "static")
+        || !strcmp(str, "struct") || !strcmp(str, "goto"))
+        return (true);
+    return (false);
+}
+
+// Returns 'true' if the string is an INTEGER.
+bool isInteger(char* str)
+{
+    int i, len = strlen(str);
+
+    if (len == 0)
+        return (false);
+    for (i = 0; i < len; i++) {
+        if (str[i] != '0' && str[i] != '1' && str[i] != '2'
+            && str[i] != '3' && str[i] != '4' && str[i] != '5'
+            && str[i] != '6' && str[i] != '7' && str[i] != '8'
+            && str[i] != '9' || (str[i] == '-' && i > 0))
+            return (false);
     }
-    return true;
+    return (true);
 }
 
-// Function to check if a string is a keyword
-bool isKeyword(char *str) {
-    const char *keywords[] = {"if", "else", "while", "do", "break", "continue", "int", "double", "float", "return", "char", "case", "sizeof", "long", "short", "typedef", "switch", "unsigned", "void", "static", "struct", "goto", NULL};
-    for (int i = 0; keywords[i] != NULL; i++) {
-        if (strcmp(str, keywords[i]) == 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// Function to check if a string is an integer
-bool isInteger(char *str) {
-    for (int i = 0; str[i] != '\0'; i++) {
-        if (!isdigit(str[i])) return false;
-    }
-    return true;
-}
-
-// Function to check if a string is a real number
-bool isRealNumber(char *str) {
+// Returns 'true' if the string is a REAL NUMBER.
+bool isRealNumber(char* str)
+{
+    int i, len = strlen(str);
     bool hasDecimal = false;
-    for (int i = 0; str[i] != '\0'; i++) {
-        if (str[i] == '.') {
-            if (hasDecimal) return false; // More than one decimal point
+
+    if (len == 0)
+        return (false);
+    for (i = 0; i < len; i++) {
+        if (str[i] != '0' && str[i] != '1' && str[i] != '2'
+            && str[i] != '3' && str[i] != '4' && str[i] != '5'
+            && str[i] != '6' && str[i] != '7' && str[i] != '8'
+            && str[i] != '9' && str[i] != '.' ||
+            (str[i] == '-' && i > 0))
+            return (false);
+        if (str[i] == '.')
             hasDecimal = true;
-        } else if (!isdigit(str[i])) {
-            return false;
-        }
     }
-    return hasDecimal; // Must have at least one decimal point
+    return (hasDecimal);
 }
 
-// Function to extract and analyze tokens from the input string
-void parse(char *str) {
+// Extracts the SUBSTRING.
+char* subString(char* str, int left, int right)
+{
+    int i;
+    char* subStr = (char*)malloc(
+                  sizeof(char) * (right - left + 2));
+
+    for (i = left; i <= right; i++)
+        subStr[i - left] = str[i];
+    subStr[right - left + 1] = '\0';
+    return (subStr);
+}
+
+// Parsing the input STRING.
+void parse(char* str)
+{
     int left = 0, right = 0;
     int len = strlen(str);
 
     while (right <= len && left <= right) {
-        if (!isDelimiter(str[right])) {
+        if (isDelimiter(str[right]) == false)
             right++;
-        }
-        if (isDelimiter(str[right]) && left == right) {
-            if (isOperator(str[right])) {
-                printf("'%c' IS AN OPERATOR\n", str[right]);
-                right++;
-                left = right;
-            }
-        } else if (isDelimiter(str[right]) && left != right || (right == len && left != right)) {
-            char *subStr = (char *)malloc(sizeof(char) * (right - left + 1));
-            strncpy(subStr, str + left, right - left);
-            subStr[right - left] = '\0'; // Null-terminate the substring
 
-            if (isKeyword(subStr)) {
+        if (isDelimiter(str[right]) == true && left == right) {
+            if (isOperator(str[right]) == true)
+                printf("'%c' IS AN OPERATOR\n", str[right]);
+
+            right++;
+            left = right;
+        } else if (isDelimiter(str[right]) == true && left != right
+                   || (right == len && left != right)) {
+            char* subStr = subString(str, left, right - 1);
+
+            if (isKeyword(subStr) == true)
                 printf("'%s' IS A KEYWORD\n", subStr);
-            } else if (isInteger(subStr)) {
+
+            else if (isInteger(subStr) == true)
                 printf("'%s' IS AN INTEGER\n", subStr);
-            } else if (isRealNumber(subStr)) {
+
+            else if (isRealNumber(subStr) == true)
                 printf("'%s' IS A REAL NUMBER\n", subStr);
-            } else if (validIdentifier(subStr)) {
+
+            else if (validIdentifier(subStr) == true
+                     && isDelimiter(str[right - 1]) == false)
                 printf("'%s' IS A VALID IDENTIFIER\n", subStr);
-            } else {
+
+            else if (validIdentifier(subStr) == false
+                     && isDelimiter(str[right - 1]) == false)
                 printf("'%s' IS NOT A VALID IDENTIFIER\n", subStr);
-            }
-            free(subStr);
             left = right;
         }
     }
+    return;
 }
 
-// Driver function
-int main() {
-    char str[MAX_LENGTH] = "int a = b + 1.5;"; // Example input
-    parse(str); // Call the parse function
-    return 0;
+// DRIVER FUNCTION
+int main()
+{
+     // maximum length of string is 100 here
+    char str[100] = "int a = b + 1c; ";
+
+    parse(str); // calling the parse function
+
+    return (0);
 }
